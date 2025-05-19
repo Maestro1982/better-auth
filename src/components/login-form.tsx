@@ -1,9 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+
+import { signIn } from '@/lib/auth-client';
 
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -11,17 +14,7 @@ import { Button } from '@/components/ui/button';
 
 // 1. Define the Zod schema
 const schema = z.object({
-  name: z
-    .string()
-    .min(2, 'Name is required')
-    .max(50, 'Name must be at most 50 characters')
-    .regex(
-      /^[^\p{Emoji_Presentation}\p{Extended_Pictographic}]+$/u,
-      'Name must not contain emojis'
-    ),
-
   email: z.string().email('Invalid email address'),
-
   password: z
     .string()
     .min(6, 'Password must be at least 6 characters')
@@ -31,56 +24,44 @@ const schema = z.object({
     ),
 });
 
-type RegisterFormValues = z.infer<typeof schema>;
+type LoginFormValues = z.infer<typeof schema>;
 
-const RegisterForm = () => {
+const LoginForm = () => {
+  const router = useRouter();
   // 2. Set up React Hook Form with Zod resolver
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormValues>({
+  } = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
   });
 
   // 3. Submit handler
-  const onSubmit = async (data: RegisterFormValues) => {
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const json = await res.json();
-
-      if (!res.ok) {
-        // Extract error message safely from response
-        const message = json?.error?.message || 'Registration failed';
-        throw new Error(message);
+  const onSubmit = async (data: LoginFormValues) => {
+    await signIn.email(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onRequest: () => {
+          // Optional: show loading
+        },
+        onResponse: () => {},
+        onSuccess: () => {
+          toast.success('Logged in successfully!');
+          router.push('/profile');
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message || 'Login failed');
+        },
       }
-
-      toast.success('Registration successful!');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        // Show the actual error message from backend (like "This name is already taken.")
-        toast.error(error.message);
-      } else {
-        toast.error('An unknown error occurred');
-      }
-    }
+    );
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='w-full space-y-4'>
-      <div className='space-y-2'>
-        <Label htmlFor='name'>Name</Label>
-        <Input id='name' {...register('name')} />
-        {errors.name && (
-          <p className='text-sm text-red-500'>{errors.name.message}</p>
-        )}
-      </div>
-
       <div className='space-y-2'>
         <Label htmlFor='email'>Email</Label>
         <Input id='email' type='email' {...register('email')} />
@@ -98,10 +79,10 @@ const RegisterForm = () => {
       </div>
 
       <Button type='submit' className='w-full' disabled={isSubmitting}>
-        {isSubmitting ? 'Registering...' : 'Register'}
+        {isSubmitting ? 'Logging in...' : 'Login'}
       </Button>
     </form>
   );
 };
 
-export default RegisterForm;
+export default LoginForm;
