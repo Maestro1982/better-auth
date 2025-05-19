@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +35,7 @@ const schema = z.object({
 type RegisterFormValues = z.infer<typeof schema>;
 
 const RegisterForm = () => {
+  const router = useRouter();
   // 2. Set up React Hook Form with Zod resolver
   const {
     register,
@@ -61,6 +63,7 @@ const RegisterForm = () => {
       }
 
       toast.success('Registration successful!');
+      router.push('/auth/login');
     } catch (error: unknown) {
       if (error instanceof Error) {
         // Show the actual error message from backend (like "This name is already taken.")

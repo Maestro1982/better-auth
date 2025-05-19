@@ -45,10 +45,6 @@ const LoginForm = () => {
         password: data.password,
       },
       {
-        onRequest: () => {
-          // Optional: show loading
-        },
-        onResponse: () => {},
         onSuccess: () => {
           toast.success('Logged in successfully!');
           router.push('/profile');
