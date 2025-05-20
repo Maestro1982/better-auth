@@ -1,23 +1,19 @@
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 import { auth } from '@/lib/auth';
+
 import SignOutButton from '@/components/sign-out-button';
 import ReturnButton from '@/components/return-button';
 
 export default async function ProfilePage() {
+  /* If middleware fails to redirect, we can check the session here and redirect if needed
+     This is a fallback in case the middleware doesn't work as expected */
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session) {
-    return (
-      <div className='min-h-screen flex items-center justify-center px-4'>
-        <p className='text-destructive text-3xl border border-red-500 rounded-lg p-6'>
-          Unauthorized
-        </p>
-      </div>
-    );
-  }
+  if (!session) redirect('/auth/login');
 
   return (
     <div className='min-h-screen flex flex-col items-center justify-center px-4'>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { APIError } from 'better-auth/api';
 
-import { auth } from '@/lib/auth';
+import { auth, ErrorCode } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 type SignUpEmailInput = Parameters<typeof auth.api.signUpEmail>[0];
@@ -24,6 +25,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ user });
   } catch (error) {
+    if (error instanceof APIError) {
+      const errorCode = error.body ? (error.body.code as ErrorCode) : 'UNKNOWN';
+
+      switch (errorCode) {
+        default:
+          return { error: error.message };
+      }
+    }
     // Log error server-side for debugging
     console.error('Registration error:', error);
 
