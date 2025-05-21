@@ -18,12 +18,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const user = await auth.api.signUpEmail({
+    const result = await auth.api.signUpEmail({
       body: { name, email, password },
       method: 'POST',
     } as SignUpEmailInput);
 
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: result.user });
   } catch (error) {
     if (error instanceof APIError) {
       const errorCode = error.body ? (error.body.code as ErrorCode) : 'UNKNOWN';

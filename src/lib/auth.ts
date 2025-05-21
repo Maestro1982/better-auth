@@ -1,10 +1,13 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { createAuthMiddleware } from 'better-auth/api';
+import { admin } from 'better-auth/plugins';
 
 import prisma from '@/lib/prisma';
 import { hashPassword, verifyPassword } from '@/lib/argon2';
 import { normalizeName } from '@/lib/utils';
+import { UserRole } from '@/generated/prisma';
+import { ac, roles } from '@/lib/permissions';
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -33,10 +36,34 @@ export const auth = betterAuth({
       };
     }),
   },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const ADMIN_EMAILS =
+            process.env.ADMIN_EMAIL?.split(';').map((e) =>
+              e.trim().toLowerCase()
+            ) ?? [];
+
+          //console.log('Checking admin email for:', user.email);
+          //console.log('ADMIN_EMAILS:', ADMIN_EMAILS);
+
+          if (ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+            console.log('Assigning ADMIN role');
+            return {
+              data: { ...user, role: UserRole.ADMIN },
+            };
+          }
+
+          return { data: user };
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       role: {
-        type: ['USER', 'ADMIN'],
+        type: ['USER', 'ADMIN'] as Array<UserRole>,
         input: false,
       },
     },
@@ -49,6 +76,14 @@ export const auth = betterAuth({
       generateId: false, // No auto-generated ID for the tables that are used by better-auth, check the prisma schema
     },
   },
+  plugins: [
+    admin({
+      defaultRole: UserRole.USER,
+      adminRoles: [UserRole.ADMIN],
+      ac,
+      roles,
+    }),
+  ],
 });
 
 // Hover over the auth.$ERROR_CODES to see all the error codes
