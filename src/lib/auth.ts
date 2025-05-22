@@ -13,6 +13,16 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,
@@ -70,6 +80,12 @@ export const auth = betterAuth({
   },
   session: {
     expiresIn: 30 * 24 * 60 * 60, // 30 days
+  },
+  account: {
+    accountLinking: {
+      enabled: false, // Disable account linking
+      // This is useful if you want to use the same email for different providers
+    },
   },
   advanced: {
     database: {
