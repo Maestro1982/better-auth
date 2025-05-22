@@ -13,7 +13,7 @@ interface UserRoleSelectProps {
 }
 
 const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
-  const [isPending, setIsPending] = useState<boolean>(false);
+  const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
   async function handleRoleChange(evt: React.ChangeEvent<HTMLSelectElement>) {
@@ -27,19 +27,21 @@ const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
     });
 
     if (canChangeRole.error) {
-      return toast.error('You do not have permission to change roles');
+      toast.error('You do not have permission to change roles');
+      return;
+    }
+
+    if (newRole !== 'USER' && newRole !== 'ADMIN') {
+      toast.error('You cannot assign this role');
+      return;
     }
 
     await admin.setRole({
       userId,
       role: newRole,
       fetchOptions: {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onResponse: () => {
-          setIsPending(false);
-        },
+        onRequest: () => setIsPending(true),
+        onResponse: () => setIsPending(false),
         onError: (ctx) => {
           toast.error(ctx.error.message);
         },
@@ -55,12 +57,18 @@ const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
     <select
       value={role}
       onChange={handleRoleChange}
-      disabled={role === 'ADMIN' || isPending}
+      disabled={role === 'SUPER_ADMIN' || isPending}
       className='px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50'
     >
       <option value='ADMIN'>ADMIN</option>
       <option value='USER'>USER</option>
+      {role === 'SUPER_ADMIN' && (
+        <option value='SUPER_ADMIN' disabled>
+          SUPER_ADMIN
+        </option>
+      )}
     </select>
   );
 };
+
 export default UserRoleSelect;

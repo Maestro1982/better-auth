@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { TriangleAlert, CircleCheckBig } from 'lucide-react';
 
+import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { UserRole } from '@/generated/prisma';
 
@@ -17,7 +18,7 @@ export default async function AdminDashboardPage() {
 
   if (!session) redirect('/auth/login');
 
-  if (session.user.role !== 'ADMIN') {
+  if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
     return (
       <div className='min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6'>
         <ReturnButton href='/profile' label='Back to Profile' />
@@ -32,17 +33,24 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const { users } = await auth.api.listUsers({
-    headers: headersList,
-    query: {
-      sortBy: 'name',
+  const users = await prisma.user.findMany({
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
     },
   });
 
   const sortedUsers = users.sort((a, b) => {
-    if (a.role === 'ADMIN' && b.role !== 'ADMIN') return -1;
-    if (a.role !== 'ADMIN' && b.role === 'ADMIN') return 1;
-    return 0;
+    const roleOrder = {
+      SUPER_ADMIN: 0,
+      ADMIN: 1,
+      USER: 2,
+    };
+
+    return roleOrder[a.role] - roleOrder[b.role];
   });
 
   return (
@@ -81,7 +89,9 @@ export default async function AdminDashboardPage() {
                     />
                   </td>
                   <td className='px-4 py-2 text-center'>
-                    {user.role === 'USER' ? (
+                    {(session.user.role === 'SUPER_ADMIN' &&
+                      user.role !== 'SUPER_ADMIN') ||
+                    user.role === 'USER' ? (
                       <DeleteUserButton userId={user.id} />
                     ) : (
                       <PlaceholderDeleteButton />

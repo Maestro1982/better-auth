@@ -34,7 +34,8 @@ export default async function ProfilePage() {
           User Profile
         </h1>
 
-        {session.user.role === 'ADMIN' ? (
+        {session.user.role === 'ADMIN' ||
+        session.user.role === 'SUPER_ADMIN' ? (
           <div className='space-y-6'>
             <div className='flex items-center justify-center gap-4'>
               <Button size='sm' asChild className='shadow-md'>
