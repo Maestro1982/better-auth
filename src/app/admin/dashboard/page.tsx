@@ -86,6 +86,7 @@ export default async function AdminDashboardPage() {
                     <UserRoleSelect
                       userId={user.id}
                       role={user.role as UserRole}
+                      currentUserId={session.user.id}
                     />
                   </td>
                   <td className='px-4 py-2 text-center'>
