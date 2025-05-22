@@ -5,16 +5,17 @@ import ReturnButton from '@/components/return-button';
 
 export default function RegisterPage() {
   return (
-    <div className='min-h-screen flex flex-col items-center justify-center px-4'>
-      <ReturnButton href='/' label='Home' />
-      <div className='w-full max-w-md space-y-6 text-center border border-black rounded-lg p-6'>
-        <h1 className='text-3xl font-bold'>Register</h1>
+    <div className='min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6'>
+      <ReturnButton href='/' label='Back to Home' />
+      <div className='w-full max-w-md bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-8 space-y-6 text-center'>
+        <h1 className='text-4xl font-extrabold text-gray-800'>Register</h1>
         <RegisterForm />
-        <div className='flex items-center'>
-          <p className='text-muted-foreground text-sm'>
-            Already have an account?
-          </p>{' '}
-          <Link href={'/auth/login'} className='hover:underline ml-2'>
+        <div className='text-sm text-gray-600 flex items-center justify-center'>
+          <span>Already have an account?</span>
+          <Link
+            href='/auth/login'
+            className='ml-2 font-medium text-blue-600 hover:underline'
+          >
             Login
           </Link>
         </div>

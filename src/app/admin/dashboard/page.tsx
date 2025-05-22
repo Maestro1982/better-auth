@@ -3,28 +3,28 @@ import { redirect } from 'next/navigation';
 import { TriangleAlert, CircleCheckBig } from 'lucide-react';
 
 import { auth } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma';
 
 import ReturnButton from '@/components/return-button';
 import DeleteUserButton, {
   PlaceholderDeleteButton,
 } from '@/components/delete-user-button';
+import UserRoleSelect from '@/components/user-role-select';
 
 export default async function AdminDashboardPage() {
   const headersList = await headers();
-  const session = await auth.api.getSession({
-    headers: headersList,
-  });
+  const session = await auth.api.getSession({ headers: headersList });
 
   if (!session) redirect('/auth/login');
 
   if (session.user.role !== 'ADMIN') {
     return (
-      <div className='min-h-screen flex flex-col items-center justify-center px-4'>
-        <ReturnButton href='/profile' label='Profile' />
-        <div className='w-full max-w-md space-y-6 text-center border border-black rounded-lg p-6'>
-          <h1 className='text-3xl font-bold'>Admin Dashboard</h1>
-          <p className='p-2 rounded-md text-lg bg-red-600 text-white font-bold uppercase flex items-center justify-center gap-2'>
-            <TriangleAlert className='size-6' />
+      <div className='min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6'>
+        <ReturnButton href='/profile' label='Back to Profile' />
+        <div className='w-full max-w-md bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-6 space-y-6 text-center'>
+          <h1 className='text-3xl font-bold text-gray-800'>Admin Dashboard</h1>
+          <p className='flex items-center justify-center gap-2 p-3 rounded-md bg-red-600 text-white font-semibold uppercase'>
+            <TriangleAlert className='size-5' />
             Access Denied
           </p>
         </div>
@@ -46,32 +46,40 @@ export default async function AdminDashboardPage() {
   });
 
   return (
-    <div className='min-h-screen flex flex-col items-center justify-center px-4'>
-      <ReturnButton href='/profile' label='Profile' />
-      <div className='w-full max-w-4xl space-y-6 text-center border border-black rounded-lg p-6'>
-        <h1 className='text-3xl font-bold'>Admin Dashboard</h1>
-        <p className='p-2 rounded-md text-lg bg-green-600 text-white font-bold uppercase flex items-center justify-center gap-2'>
-          <CircleCheckBig className='size-6' />
+    <div className='min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6'>
+      <ReturnButton href='/profile' label='Back to Profile' />
+      <div className='w-full max-w-5xl bg-white/70 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-8 space-y-6'>
+        <h1 className='text-4xl font-extrabold text-gray-800 text-center'>
+          Admin Dashboard
+        </h1>
+        <p className='flex items-center justify-center gap-2 p-3 rounded-md bg-green-600 text-white font-semibold uppercase'>
+          <CircleCheckBig className='size-5' />
           Access Granted
         </p>
+
         <div className='w-full overflow-x-auto'>
-          <table className='table-auto min-w-full whitespace-nowrap text-left'>
-            <thead>
-              <tr className='border-b text-sm text-left'>
-                <th className='px-2 py-2'>ID</th>
-                <th className='px-2 py-2'>Name</th>
-                <th className='px-2 py-2'>Email</th>
-                <th className='px-2 py-2 text-center'>Role</th>
-                <th className='px-2 py-2 text-center'>Actions</th>
+          <table className='min-w-full table-auto text-sm text-left border border-gray-300 rounded-md overflow-hidden'>
+            <thead className='bg-gray-200'>
+              <tr className='text-gray-700 uppercase text-xs tracking-wider'>
+                <th className='px-4 py-3'>ID</th>
+                <th className='px-4 py-3'>Name</th>
+                <th className='px-4 py-3'>Email</th>
+                <th className='px-4 py-3 text-center'>Role</th>
+                <th className='px-4 py-3 text-center'>Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className='bg-white divide-y divide-gray-200'>
               {sortedUsers.map((user) => (
-                <tr key={user.id} className='border-b text-sm text-left'>
+                <tr key={user.id} className='hover:bg-gray-50'>
                   <td className='px-4 py-2'>{user.id.slice(0, 8)}</td>
                   <td className='px-4 py-2'>{user.name}</td>
                   <td className='px-4 py-2'>{user.email}</td>
-                  <td className='px-4 py-2 text-center'>{user.role}</td>
+                  <td className='px-4 py-2 text-center'>
+                    <UserRoleSelect
+                      userId={user.id}
+                      role={user.role as UserRole}
+                    />
+                  </td>
                   <td className='px-4 py-2 text-center'>
                     {user.role === 'USER' ? (
                       <DeleteUserButton userId={user.id} />
