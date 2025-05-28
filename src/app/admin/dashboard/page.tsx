@@ -16,7 +16,7 @@ import UserRoleSelect from '@/components/user-role-select';
 import { Button } from '@/components/ui/button';
 
 interface PageProps {
-  searchParams?: {
+  searchParams: {
     page?: string;
   };
 }
