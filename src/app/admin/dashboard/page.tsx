@@ -15,11 +15,11 @@ import UserRoleSelect from '@/components/user-role-select';
 
 import { Button } from '@/components/ui/button';
 
-type Props = {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
   searchParams?: { page?: string };
-};
-
-export default async function AdminDashboardPage({ searchParams }: Props) {
+}) {
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
 
