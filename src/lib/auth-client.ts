@@ -9,4 +9,5 @@ const authClient = createAuthClient({
   plugins: [inferAdditionalFields<typeof auth>(), adminClient({ ac, roles })],
 });
 
-export const { signUp, signOut, signIn, useSession, admin } = authClient;
+export const { signUp, signOut, signIn, useSession, admin, updateUser } =
+  authClient;

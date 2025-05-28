@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { TriangleAlert, CircleCheckBig } from 'lucide-react';
@@ -12,7 +13,15 @@ import DeleteUserButton, {
 } from '@/components/delete-user-button';
 import UserRoleSelect from '@/components/user-role-select';
 
-export default async function AdminDashboardPage() {
+import { Button } from '@/components/ui/button';
+
+interface PageProps {
+  searchParams?: {
+    page?: string;
+  };
+}
+
+export default async function AdminDashboardPage({ searchParams }: PageProps) {
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
 
@@ -43,6 +52,7 @@ export default async function AdminDashboardPage() {
     },
   });
 
+  // Sort by role manually
   const sortedUsers = users.sort((a, b) => {
     const roleOrder = {
       SUPER_ADMIN: 0,
@@ -52,6 +62,19 @@ export default async function AdminDashboardPage() {
 
     return roleOrder[a.role] - roleOrder[b.role];
   });
+
+  // Pagination logic after sorting
+  const pageSize = 5;
+
+  let currentPage = parseInt(searchParams?.page ?? '1', 10);
+  if (isNaN(currentPage) || currentPage < 1) currentPage = 1;
+
+  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / pageSize));
+
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * pageSize;
+  const paginatedUsers = sortedUsers.slice(start, start + pageSize);
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-100 to-slate-300 flex flex-col items-center justify-center p-6'>
@@ -77,7 +100,7 @@ export default async function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-200'>
-              {sortedUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className='hover:bg-gray-50'>
                   <td className='px-4 py-2'>{user.id.slice(0, 8)}</td>
                   <td className='px-4 py-2'>{user.name}</td>
@@ -102,6 +125,29 @@ export default async function AdminDashboardPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className='flex justify-between items-center mt-6'>
+          {currentPage <= 1 ? (
+            <Button disabled>Previous</Button>
+          ) : (
+            <Button asChild>
+              <Link href={`?page=${currentPage - 1}`}>Previous</Link>
+            </Button>
+          )}
+
+          <span className='text-gray-600 text-sm'>
+            Page {currentPage} of {totalPages}
+          </span>
+
+          {currentPage >= totalPages ? (
+            <Button disabled>Next</Button>
+          ) : (
+            <Button asChild>
+              <Link href={`?page=${currentPage + 1}`}>Next</Link>
+            </Button>
+          )}
         </div>
       </div>
     </div>

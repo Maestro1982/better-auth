@@ -1,12 +1,15 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+//import Image from 'next/image';
 
 import { auth } from '@/lib/auth';
 
+import { Button } from '@/components/ui/button';
+
 import SignOutButton from '@/components/sign-out-button';
 import ReturnButton from '@/components/return-button';
-import { Button } from '@/components/ui/button';
+import UpdateUserForm from '@/components/update-user-form';
 
 export default async function ProfilePage() {
   const headersList = await headers();
@@ -33,6 +36,30 @@ export default async function ProfilePage() {
         <h1 className='text-4xl font-extrabold text-gray-800 text-center'>
           User Profile
         </h1>
+
+        <div className='flex justify-center'>
+          {session.user.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={session?.user?.image}
+              alt='User Image'
+              width={80}
+              height={80}
+              className='w-20 h-20 border border-primary rounded-md object-cover shadow-md'
+            />
+          ) : (
+            <div className='w-20 h-20 border border-primary rounded-md bg-primary text-primary-foreground flex items-center justify-center shadow-md'>
+              <span className='uppercase font-bold text-lg'>
+                {session.user.name
+                  .split(' ')
+                  .map((part) => part[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase()}
+              </span>
+            </div>
+          )}
+        </div>
 
         {session.user.role === 'ADMIN' ||
         session.user.role === 'SUPER_ADMIN' ? (
@@ -89,6 +116,18 @@ export default async function ProfilePage() {
               {JSON.stringify(session, null, 2)}
             </pre>
           </div>
+        </div>
+
+        <div className='space-y-4 p-4 rounded-b-md border border-t-8 border-blue-600'>
+          <h2 className='text-2xl font-bold'>Update User</h2>
+          <UpdateUserForm
+            name={session.user.name}
+            image={session.user.image ?? ''}
+          />
+        </div>
+
+        <div className='space-y-4 p-4 rounded-b-md border border-t-8 border-red-600'>
+          <h2 className='text-2xl font-bold'>Change Password</h2>
         </div>
       </div>
     </div>
