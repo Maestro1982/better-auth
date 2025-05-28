@@ -80,6 +80,10 @@ const options = {
   },
   session: {
     expiresIn: 30 * 24 * 60 * 60, // 30 days
+    cookieCache: {
+      enabled: true, // Enable cookie caching for sessions,
+      maxAge: 5 * 60, // 5 minutes
+    },
   },
   account: {
     accountLinking: {
